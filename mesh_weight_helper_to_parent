@@ -1,0 +1,6 @@
+
+
+# TODO:
+# add a temporary override fix because for 'rig_anim' the parents are the 'ORG' bones and change it to the 'DEF' in post
+# add a funtion to unlink the shapekeys from the main then one that relinks it after the function is done
+  # if we do that remove the gret check
