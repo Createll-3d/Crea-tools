@@ -76,13 +76,11 @@ def extract_shape_keys_vertex_positons(object):
     shape_keys = object.data.shape_keys.key_blocks
     
     for shape_key in shape_keys:
-        if shape_key.name != "Basis":
+        if shape_key.name != "Basis": # we can just get rid of this but for safety so that the new basis doesnt get influenced by this code
             shape_keys_vertex_positons[shape_key.name] = [shape_key.data[i].co.copy() for i in range(len(shape_key.data))]
     return shape_keys_vertex_positons
 
 def reconstruct_shape_keys_vertex_positons(object, vertex_data):
-    """ Reconstruct shape keys in the specified object using extracted vertex data. """
-    # Ensure you're in Object Mode
     bpy.ops.object.mode_set(mode='OBJECT')
     
     # incase we dicide to also get Basis from original state mesh
@@ -98,7 +96,6 @@ def reconstruct_shape_keys_vertex_positons(object, vertex_data):
 
     for shape_key_name, vertices in vertex_data.items():
         if shape_key_name != "Basis":
-
             new_shape_key = object.shape_key_add(name=shape_key_name, from_mix=False)
             shape_key_data = new_shape_key.data
             
