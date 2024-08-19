@@ -62,18 +62,70 @@ def merge_helper_to_parent(object, armature = None):
                 add_weight_via_geometry_node(object, parent_bone_name, helper_bone_name)
 
                 
-create_geometry_node()
+
+def clear_shapekeys(object):
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.context.view_layer.objects.active = object
+    object.select_set(True)
+    bpy.ops.object.shape_key_remove(all=True)
+    object.select_set(False)
+
+def extract_shape_keys_vertex_positons(object):
+    bpy.ops.object.mode_set(mode='OBJECT')
+    shape_keys_vertex_positons = {}
+    shape_keys = object.data.shape_keys.key_blocks
+    
+    for shape_key in shape_keys:
+        if shape_key.name != "Basis":
+            shape_keys_vertex_positons[shape_key.name] = [shape_key.data[i].co.copy() for i in range(len(shape_key.data))]
+    return shape_keys_vertex_positons
+
+def reconstruct_shape_keys_vertex_positons(object, vertex_data):
+    """ Reconstruct shape keys in the specified object using extracted vertex data. """
+    # Ensure you're in Object Mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # incase we dicide to also get Basis from original state mesh
+    if "Basis" in vertex_data:
+        for i, vertex_location in enumerate(vertex_data["Basis"]):
+            basis_shape_key_data[i].co = vertex_location
+    else:
+        bpy.context.view_layer.objects.active = object
+        object.select_set(True)
+        bpy.ops.object.shape_key_add(from_mix=False)
+        object.select_set(False)
+       
+
+    for shape_key_name, vertices in vertex_data.items():
+        if shape_key_name != "Basis":
+
+            new_shape_key = object.shape_key_add(name=shape_key_name, from_mix=False)
+            shape_key_data = new_shape_key.data
+            
+            for i, vertex_location in enumerate(vertices):
+                shape_key_data[i].co = vertex_location
+        
+        print(f"Activity: Reconstructing {shape_key_name}")
+    
+    object.data.update()
+    print(f"Activity: Reconstructing Shapekeys Finished")
+
+print(f"--------------------------------\nActivity: Starting")
+create_geometry_node() #if we want it truly automated; also dont forget that we still need to mention that geometryn node
 
 selected_objects = get_mesh_selection()
 for object in selected_objects:
+    shape_key_vertex_data = extract_shape_keys_vertex_positons(object)
+    clear_shapekeys(object)
     merge_helper_to_parent(object)
+    reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
 
 
 # TODO:
 # add a temporary override fix because for 'rig_anim' the parents are the 'ORG' bones and change it to the 'DEF' in post OR its about using the metarig one (?)
-# add a funtion to unlink the shapekeys from the main then one that relinks it after the function is done
-  # if we do that remove the gret check
 # also it somehow didnt get rid of everything maybe its the parts that 
 
 # DONE
 # function for clean-up delete bones from armature 
+# add a funtion to unlink the shapekeys from the main then one that relinks it after the function is done
+  # if we do that remove the gret check
