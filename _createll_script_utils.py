@@ -198,6 +198,8 @@ def write_armature_data_to_custom_properties(object, modifier_name = 'Armature')
 
 def set_armature_and_bone_name(rig_type, weight_armature = bpy.data.armatures['metarig'], anim_armature = bpy.data.armatures['rig_anim'], mesh_lists = get_mesh_selection()):
     # rig_type = 'ANIMRIG' or 'METARIG'
+    print(f"Activity : Setting Rig Style to {rig_type}")
+    
     standard_rigify_deform_bones = set(['spine', 'pelvis.L', 'pelvis.R', 'thigh.L', 'thigh.L.001', 'shin.L', 'shin.L.001', 'foot.L', 'toe.L', 'thigh.R', 'thigh.R.001', 'shin.R', 'shin.R.001', 'foot.R', 'toe.R', 'temple.L', 'temple.R', 'tongue', 'chin', 'chin.001', 'chin.L', 'chin.R', 'jaw', 'jaw.L.001', 'jaw.R.001', 'tongue.001', 'tongue.002', 'cheek.T.L', 'cheek.T.R', 'jaw.L', 'jaw.R', 'nose', 'nose.L', 'nose.R', 'cheek.B.L.001', 'cheek.B.R.001', 'cheek.B.L', 'cheek.B.R',  'nose.002', 'nose.001', 'nose.003', 'nose.004', 'nose.L.001', 'nose.R.001', 'cheek.T.L.001', 'cheek.T.R.001', 'shoulder.L', 'upper_arm.L', 'upper_arm.L.001', 'forearm.L', 'forearm.L.001', 'hand.L', 'f_index.01.L', 'f_index.02.L', 'f_index.03.L', 'thumb.01.L', 'thumb.02.L', 'thumb.03.L', 'palm.01.L', 'f_middle.01.L', 'f_middle.02.L', 'f_middle.03.L', 'palm.02.L', 'f_ring.01.L', 'f_ring.02.L', 'f_ring.03.L', 'palm.03.L', 'f_pinky.01.L', 'f_pinky.02.L', 'f_pinky.03.L', 'palm.04.L', 'shoulder.R', 'upper_arm.R', 'upper_arm.R.001', 'forearm.R', 'forearm.R.001', 'hand.R', 'f_index.01.R', 'f_index.02.R', 'f_index.03.R', 'thumb.01.R', 'thumb.02.R', 'thumb.03.R', 'palm.01.R', 'f_middle.01.R', 'f_middle.02.R', 'f_middle.03.R', 'palm.02.R', 'f_ring.01.R', 'f_ring.02.R', 'f_ring.03.R', 'palm.03.R', 'f_pinky.01.R', 'f_pinky.02.R', 'f_pinky.03.R', 'palm.04.R'])
     standard_rigify_deform_bones_substrings = ['spine.', 'lid.', 'lip.', 'brow.', 'teeth.', 'forehead.', 'heel.', 'ear.']
 
@@ -217,7 +219,7 @@ def set_armature_and_bone_name(rig_type, weight_armature = bpy.data.armatures['m
         
         obj_aramture_modifier_object = obj.modifiers.get('Armature').object
         
-        if rig_type == 'ANIMRIG':
+        if rig_type == 'ANIMRIG' or rig_type == 'rig_anim':
             
             obj['_rig_name'] = 'rig_anim'
             obj.modifiers.get('Armature').object = bpy.data.objects.get(obj['_rig_name'])
@@ -227,7 +229,7 @@ def set_armature_and_bone_name(rig_type, weight_armature = bpy.data.armatures['m
                 if obj.vertex_groups.get(deform_bone):
                     obj.vertex_groups.get(deform_bone).name = 'DEF-' + deform_bone
             
-        elif rig_type == 'METARIG':
+        elif rig_type == 'METARIG' or rig_type == 'rig_metarig':
             
             obj['_rig_name'] = 'metarig'
             obj.modifiers.get('Armature').object = bpy.data.objects.get(obj['_rig_name'])

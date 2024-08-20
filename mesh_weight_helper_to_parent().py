@@ -1,5 +1,18 @@
 import bpy
 
+import sys
+import os
+import importlib
+sys.path.append(bpy.utils.script_paths()[2]) # change script path on blender or change this 
+import _createll_script_utils
+importlib.reload(_createll_script_utils)
+from _createll_script_utils import (
+    # only import whats necessary
+    set_armature_and_bone_name, #(rig_type, weight_armature = bpy.data.armatures['metarig'], anim_armature = bpy.data.armatures['rig_anim'], mesh_lists = get_mesh_selection()):
+    
+)
+
+
 def create_geometry_node():
     return
 
@@ -139,22 +152,24 @@ def reconstruct_shape_keys_vertex_positons(object, vertex_data):
     object.data.update()
     print(f"Activity: Reconstructing Shapekeys Finished")
 
+# =================================================================== #
+
 print(f"--------------------------------\nActivity: Starting")
 create_geometry_node() #if we want it truly automated; also dont forget that we still need to mention that geometryn node
 
+
 selected_objects = get_mesh_selection()
 for object in selected_objects:
+    if object['_rig_name'] == 'rig_anim':
+        current_rig_state = object[_rig_name]
+        set_armature_and_bone_name('METARIG')
+    
     shape_key_vertex_data = extract_shape_keys_vertex_positons(object)
     clear_shapekeys(object)
     merge_helper_to_parent(object)
     reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
+    
+    if current_rig_state != object['_rig_name']:
+        set_armature_and_bone_name(current_rig_state)
 
 
-# TODO:
-# add a temporary override fix because for 'rig_anim' the parents are the 'ORG' bones and change it to the 'DEF' in post OR its about using the metarig one (?)
-# also it somehow didnt get rid of everything maybe its the parts that 
-
-# DONE
-# function for clean-up delete bones from armature 
-# add a funtion to unlink the shapekeys from the main then one that relinks it after the function is done
-  # if we do that remove the gret check
