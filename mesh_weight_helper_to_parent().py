@@ -1,5 +1,13 @@
 import bpy
 
+"""
+Objective/Purpose
+    - purges all helper bones in selected rig
+
+To Do
+    - use proper names lmao "delete_bone" is bad
+"""
+
 import sys
 import os
 import importlib

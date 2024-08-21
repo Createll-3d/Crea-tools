@@ -1,2 +1,46 @@
 Steps
 
+"""
+Objective/Purpose
+    - 
+	
+Requires
+	-
+
+To Do
+    - 
+"""
+
+mesh to
+
+
+
+Rig Workflow 
+	Prepare Mesh
+		- mesh_to_rig_scene().py
+			# not needed use final
+		- mesh_to_final_scene().py
+		
+	Weight Paint Management
+		- mesh_auto_weight_paint_selected().py
+		- rig_mesh_toggle_armature_and_weights().py
+	Weight Clean-up
+		- mesh_weight_helper_to_parent().py
+		- rig_delete_helper_bones().py
+
+Rig Workflow Head
+	Prepare Mesh
+		- mesh_head_to_arkit_head().py
+			# used as intermediate scence for less lag testing
+		- mesh_pose_to_shapekeys().py
+	Weight Paint Management
+		- mesh_auto_weight_paint_selected().py
+		- rig_mesh_toggle_armature_and_weights().py
+	Weight Clean-up
+		- mesh_weight_helper_to_parent().py
+		- rig_delete_helper_bones().py
+
+Paint Line Workflow
+	- setup_paint_line().py
+	
+	mesh_head_to_ARkit_head
