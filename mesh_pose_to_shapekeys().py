@@ -5,14 +5,25 @@ Objective/Purpose
     - 
 	
 Requires
-	- gret
+	- gret add-on
+    - there should be a window on your workspace dedicated for Asset Library with the Poses
+        - it needs to be accessible so it wont work if your searching something 
 
 To Do
+    - cleaner selection of stuff that 
     - account for the source of the pose
         - self shapekey
         - lattice
         - any deforms
-    - 
+        - armature (and determine to what armature)
+        - also determine if the action has combinations of these
+    - maybe treat the arkit poses as a bit different
+        - want the pose names to have a prefix but not the shapekey
+    - functions for handling each thing 
+    - theres a bug in blender that saves unlinked shapkey blocks
+        - and then when it notices it tries to delete them all
+        - more relevant to the mesh copy/sync stuff
+        - there was a fix but I guess it doesnt cover 3.6.14 lts
 """
 
 import sys
@@ -40,7 +51,8 @@ Poses = [
     ('Poses_ARkit', ['browInnerUp','browDownLeft','browDownRight','browOuterUpLeft','browOuterUpRight','eyeLookUpLeft','eyeLookUpRight','eyeLookDownLeft','eyeLookDownRight','eyeLookInLeft','eyeLookInRight','eyeLookOutLeft','eyeLookOutRight','eyeBlinkLeft','eyeBlinkRight','eyeSquintRight','eyeSquintLeft','eyeWideLeft','eyeWideRight','cheekPuff','cheekSquintLeft','cheekSquintRight','noseSneerLeft','noseSneerRight','jawOpen','jawForward','jawLeft','jawRight','mouthFunnel','mouthPucker','mouthLeft','mouthRight','mouthRollUpper','mouthRollLower','mouthShrugUpper','mouthShrugLower','mouthClose','mouthSmileLeft','mouthSmileRight','mouthFrownLeft','mouthFrownRight','mouthDimpleLeft','mouthDimpleRight','mouthUpperUpLeft','mouthUpperUpRight','mouthLowerDownLeft','mouthLowerDownRight','mouthPressLeft','mouthPressRight','mouthStretchLeft','mouthStretchRight','tongueOut']),
     ('Poses_Viseme', ['v_sil', 'v_aa', 'v_ee', 'v_ih', 'v_oh', 'v_ou', 'v_pp', 'v_ff', 'v_th', 'v_dd', 'v_kk', 'v_ch', 'v_ss', 'v_nn', 'v_rr', 'v_lookUp', 'v_lookDown', 'v_lookL', 'v_lookR', 'v_blink', 'v_blinkLeft', 'v_blinkRight', 'v_Angry', 'v_Sorrow', 'v_Joy', 'v_Fun', 'v_Suprised']),
     ('Poses_Extra', []),
-    ('Poses_Generic', []),
+    ('Poses_Physics', ['p']),
+    ('Poses_Corrective', []),
 ]
 
 #empty poses for testing
