@@ -2,4 +2,4 @@
 
 bad code enthusiast 
 
-also yes the name is stupid KEK
+also yes the name is stupid :D
