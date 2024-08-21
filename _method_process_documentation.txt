@@ -40,6 +40,9 @@ Rig Workflow Head
 		- mesh_weight_helper_to_parent().py
 		- rig_delete_helper_bones().py
 
+Texture 
+	- texture_material_bake().py
+	
 Paint Line Workflow
 	- setup_paint_line().py
 	
