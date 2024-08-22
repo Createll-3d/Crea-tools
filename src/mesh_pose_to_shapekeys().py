@@ -10,20 +10,42 @@ Requires
         - it needs to be accessible so it wont work if your searching something 
 
 To Do
-    - cleaner selection of stuff that 
+    - asset window
+        - create window if doesnt exists
+        - clear search
+    - unlink pose on armature before start
+    - cleaner selection of stuff that is used to deform
     - account for the source of the pose
-        - self shapekey
-        - lattice
         - any deforms
+            - displace (how can this be pointed at by an action)
+            - lattice
+            - self shapekey
         - armature (and determine to what armature)
         - also determine if the action has combinations of these
     - maybe treat the arkit poses as a bit different
         - want the pose names to have a prefix but not the shapekey
-    - functions for handling each thing 
+    - functions for handling each thing
+    - refactor to have switches or stages to keep the SD versions
+        - so iteration is faster 
+            - by not inducing the bug (saving untargeted shapekeys) to be foreced to happen
+            - by also having a one click update shapekeys
     - theres a bug in blender that saves unlinked shapkey blocks
         - and then when it notices it tries to delete them all
         - more relevant to the mesh copy/sync stuff
         - there was a fix but I guess it doesnt cover 3.6.14 lts
+    - theres a way to store posed values as vertex locations but
+        - for transfer
+            - need to check how subdiv messes with index
+        - or the transfer could be by vertex distace
+        - could be geometry node or could be store location via lists
+            - for geometry node need to save for self shapekeys
+    - for speed
+        - track poses that is modified somehow
+            - a watchdog for what poses are changed somehow
+                - a watchdog might be hard to implement
+            - maybe we can use the description to store that it changed
+        - arkit only switch for the arkit testing
+        - auto switch the arkit test to the image texture version of a material
 """
 
 import sys
@@ -49,10 +71,10 @@ target_collection = bpy.data.collections['head.ARkit']
 
 Poses = [
     ('Poses_ARkit', ['browInnerUp','browDownLeft','browDownRight','browOuterUpLeft','browOuterUpRight','eyeLookUpLeft','eyeLookUpRight','eyeLookDownLeft','eyeLookDownRight','eyeLookInLeft','eyeLookInRight','eyeLookOutLeft','eyeLookOutRight','eyeBlinkLeft','eyeBlinkRight','eyeSquintRight','eyeSquintLeft','eyeWideLeft','eyeWideRight','cheekPuff','cheekSquintLeft','cheekSquintRight','noseSneerLeft','noseSneerRight','jawOpen','jawForward','jawLeft','jawRight','mouthFunnel','mouthPucker','mouthLeft','mouthRight','mouthRollUpper','mouthRollLower','mouthShrugUpper','mouthShrugLower','mouthClose','mouthSmileLeft','mouthSmileRight','mouthFrownLeft','mouthFrownRight','mouthDimpleLeft','mouthDimpleRight','mouthUpperUpLeft','mouthUpperUpRight','mouthLowerDownLeft','mouthLowerDownRight','mouthPressLeft','mouthPressRight','mouthStretchLeft','mouthStretchRight','tongueOut']),
-    ('Poses_Viseme', ['v_sil', 'v_aa', 'v_ee', 'v_ih', 'v_oh', 'v_ou', 'v_pp', 'v_ff', 'v_th', 'v_dd', 'v_kk', 'v_ch', 'v_ss', 'v_nn', 'v_rr', 'v_lookUp', 'v_lookDown', 'v_lookL', 'v_lookR', 'v_blink', 'v_blinkLeft', 'v_blinkRight', 'v_Angry', 'v_Sorrow', 'v_Joy', 'v_Fun', 'v_Suprised']),
-    ('Poses_Extra', []),
-    ('Poses_Physics', ['p']),
-    ('Poses_Corrective', []),
+    #('Poses_Viseme', ['v_sil', 'v_aa', 'v_ee', 'v_ih', 'v_oh', 'v_ou', 'v_pp', 'v_ff', 'v_th', 'v_dd', 'v_kk', 'v_ch', 'v_ss', 'v_nn', 'v_rr', 'v_lookUp', 'v_lookDown', 'v_lookL', 'v_lookR', 'v_blink', 'v_blinkLeft', 'v_blinkRight', 'v_Angry', 'v_Sorrow', 'v_Joy', 'v_Fun', 'v_Suprised']),
+    #('Poses_Extra', []),
+    #('Poses_Physics', ['p_eye_mouth_scale_x-','p_eye_mouth_scale_y-','p_eye_scale_IrisX-_L','p_eye_scale_IrisX-_R','p_eye_scale_IrisY-_L','p_eye_scale_IrisY-_R','p_eye_scale_middleX-_L','p_eye_scale_middleX-_R','p_eye_scale_XY_L','p_eye_scale_XY_R','p_eye_scale_Y-_L','p_eye_scale_Y-_R']),
+    #('Poses_Corrective', []),
 ]
 
 #empty poses for testing
@@ -65,7 +87,7 @@ Poses = [
 
 
 
-def set_pose_action(action_name, IsFlipped, armature):
+def set_pose_action(action_name, IsFlipped, armature): 
     set_object_active(armature)
     bpy.ops.object.mode_set(mode='POSE')
     
