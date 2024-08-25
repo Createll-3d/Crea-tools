@@ -5,7 +5,7 @@ Objective/Purpose
     - purges all helper bones in selected rig
 
 To Do
-    - use proper names lmao "delete_bone" is bad
+    - use proper function names "delete_bone" is bad
 """
 
 import sys
@@ -31,7 +31,7 @@ def get_mesh_selection():
             selected_objects.append(obj)
     return selected_objects
 
-def add_weight_via_geometry_node(target_object, parent_bone_name, helper_bone_name):
+def add_weight_via_geometry_node(target_object, parent_bone_name, helper_bone_name): # might need to change depending on you geometry node inputs
     print(helper_bone_name + "->" + parent_bone_name)
     
     
@@ -40,7 +40,6 @@ def add_weight_via_geometry_node(target_object, parent_bone_name, helper_bone_na
     target_object.modifiers['_temp_HelperToParent']['Input_2'] = parent_bone_name
     target_object.modifiers['_temp_HelperToParent']['Input_3'] = helper_bone_name
         
-    # Set-up Context
     bpy.context.view_layer.objects.active = target_object
     target_object.select_set(True)
     bpy.ops.object.mode_set(mode='OBJECT')
@@ -162,22 +161,28 @@ def reconstruct_shape_keys_vertex_positons(object, vertex_data):
 
 # =================================================================== #
 
-print(f"--------------------------------\nActivity: Starting")
 create_geometry_node() #if we want it truly automated; also dont forget that we still need to mention that geometryn node
 
-
-selected_objects = get_mesh_selection()
-for object in selected_objects:
-    if object['_rig_name'] == 'rig_anim':
-        current_rig_state = object[_rig_name]
-        set_armature_and_bone_name('METARIG')
+def main(object_list = None):
     
-    shape_key_vertex_data = extract_shape_keys_vertex_positons(object)
-    clear_shapekeys(object)
-    merge_helper_to_parent(object)
-    reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
+    if object_list is None:
+        object_list = get_mesh_selection()
     
-    if current_rig_state != object['_rig_name']:
-        set_armature_and_bone_name(current_rig_state)
+    print(f"--------------------------------\nActivity: Starting {__name__}")
+    
+    for object in object_list:
+        if object['_rig_name'] == 'rig_anim':
+            current_rig_state = object[_rig_name]
+            set_armature_and_bone_name('METARIG')
+        
+        shape_key_vertex_data = extract_shape_keys_vertex_positons(object)
+        clear_shapekeys(object)
+        merge_helper_to_parent(object)
+        reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
+        
+        if current_rig_state != object['_rig_name']:
+            set_armature_and_bone_name(current_rig_state)
 
+if __name__ == "__main__":
+    main(get_mesh_selection())
 
