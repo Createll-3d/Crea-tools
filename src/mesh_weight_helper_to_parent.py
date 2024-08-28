@@ -53,10 +53,8 @@ def add_weight_via_geometry_node(target_object, parent_bone_name, helper_bone_na
 
 def get_helper_parent(armature, helper_bone_name):
 
-    helper_bone = armature.data.bones.get(helper_bone_name)
     
-    # Print the bone for debugging
-   
+    helper_bone = armature.data.bones.get(helper_bone_name,None)   
     
     if helper_bone:
         if 'helper' in helper_bone.name:
@@ -85,19 +83,24 @@ def merge_helper_to_parent(object, armature = None):
     for helper_bone_name in vetex_group_collection:
         
         print(f"Activity: Getting Parent of {helper_bone_name} ")
-        parent_bone_name = get_helper_parent(armature, helper_bone_name).name        
         
-        if parent_bone_name:
-            print(f"Activity: {helper_bone_name} to {parent_bone_name}")
-            if parent_bone_name.startswith('ORG-'): # just a temporary measure helper bones should be parented to the def vers
-                parent_bone_name = parent_bone_name.replace('ORG-', 'DEF-', 1)
-                
-            add_weight_via_geometry_node(object, parent_bone_name, helper_bone_name)
+        if armature.data.bones.get(helper_bone_name):
+            parent_bone = get_helper_parent(armature, helper_bone_name)
             
-            vetex_group_collection_merged.append(helper_bone_name)
-    
+            if parent_bone:
+                parent_bone_name = parent_bone.name        
+                
+                if parent_bone_name:
+                    print(f"Activity: {helper_bone_name} to {parent_bone_name}")
+                    if parent_bone_name.startswith('ORG-'): # just a temporary measure helper bones should be parented to the def vers
+                        parent_bone_name = parent_bone_name.replace('ORG-', 'DEF-', 1)
+                        
+                    add_weight_via_geometry_node(object, parent_bone_name, helper_bone_name)
+                    
+                    vetex_group_collection_merged.append(helper_bone_name)
+
     missed_bones = set(vetex_group_collection) - set(vetex_group_collection_merged)
-    print(missed_bones)
+    print(f"Debug : Missed bones {missed_bones}")
     
 #    if len(vetex_group_collection) > 0:
 #        merge_helper_to_parent(object, armature)
@@ -116,6 +119,7 @@ def clear_shapekeys(object):
     object.select_set(False)
 
 def extract_shape_keys_vertex_positons(object):
+    bpy.context.view_layer.objects.active = object
     bpy.ops.object.mode_set(mode='OBJECT')
     shape_keys_vertex_positons = {}
     
@@ -159,30 +163,87 @@ def reconstruct_shape_keys_vertex_positons(object, vertex_data):
     object.data.update()
     print(f"Activity: Reconstructing Shapekeys Finished")
 
+
+def remove_zero_weight_vertex_groups(object, toggle_only_helper = False):
+
+    print(f"Activity: Removing zero weight vertex groups")
+    
+    vertex_groups = object.vertex_groups[:]
+    
+    for vg in vertex_groups:
+        
+        vg_name = vg.name
+        remove_group = True
+        for v in object.data.vertices:
+            for g in v.groups:
+                if g.group == vg.index:
+                    if g.weight > 0:
+                        remove_group = False
+                        break
+            if not remove_group:
+                break
+            
+        if remove_group:
+            if '.helper' not in vg.name and toggle_only_helper:
+                None
+                
+            print(f"Activity: Removing vertex group {vg_name}")
+            object.vertex_groups.remove(vg)
+            
+        else:
+            None
+
+
+
 # =================================================================== #
 
 create_geometry_node() #if we want it truly automated; also dont forget that we still need to mention that geometryn node
 
-def main(object_list = None):
-    
-    if object_list is None:
-        object_list = get_mesh_selection()
+def main(objects_list):
     
     print(f"--------------------------------\nActivity: Starting {__name__}")
     
-    for object in object_list:
-        if object['_rig_name'] == 'rig_anim':
-            current_rig_state = object[_rig_name]
-            set_armature_and_bone_name('METARIG')
+    for object in objects_list:
+        
+        print(f"Activity: Starting merge for {object.name}")
+        
+#        current_rig_state = object['_rig_name']
+#        if object['_rig_name'] == 'rig_anim':
+#            set_armature_and_bone_name('METARIG')
+#            object['_rig_name'] == 'metarig'
+#            current_rig_state = object['_rig_name']
         
         shape_key_vertex_data = extract_shape_keys_vertex_positons(object)
         clear_shapekeys(object)
-        merge_helper_to_parent(object)
-        reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
+        remove_zero_weight_vertex_groups(object, toggle_only_helper = True)  
         
-        if current_rig_state != object['_rig_name']:
-            set_armature_and_bone_name(current_rig_state)
+        bpy.ops.ed.undo_push(message = f"Activity: Undo Split for {object.name}") #to prevent memory crash
+        print(f"Activity: Undo Split for {object.name}")
+        
+        merge_helper_to_parent(object)
+        
+        bpy.ops.ed.undo_push(message = f"Activity: Undo Split for {object.name}") #to prevent memory crash
+        print(f"Activity: Undo Split for {object.name}")
+        
+        reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
+        remove_zero_weight_vertex_groups(object, toggle_only_helper = False)
+        
+#        if current_rig_state != object['_rig_name']:
+#            set_armature_and_bone_name(current_rig_state)
+            
+        bpy.ops.ed.undo_push(message = f"Activity: Undo Split fot {object.name}")
+        print(f"Activity: Undo Split for {object.name}")
 
 if __name__ == "__main__":
-    main(get_mesh_selection())
+    
+    objects_list = get_mesh_selection()
+    
+    if len(objects_list) < 1:
+        objects_list = bpy.data.collections['Texture Bake.Upload'].all_objects
+    
+    main(objects_list)
+    
+    
+
+        
 
