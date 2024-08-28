@@ -73,6 +73,16 @@ def set_armature_and_bone_name(rig_type):
                     print('DEF-' + deform_bone + ' to : ' + deform_bone)
                     obj.vertex_groups.get('DEF-' + deform_bone).name = deform_bone
 
+def get_main_object_from_object_with_name_suffix(object, suffixes = ['.Weight', '.Final', '.Upload', '.Arkit']):
+    for suffix in suffixes:
+        if suffix in object.name:
+            object_name = object.name
+            main_name = object_name.replace(suffix,'')
+            main_object = bpy.data.objects.get(main_name ,None)
+            if main_object:
+                return main_object
+    return object
+            
 
 set_armature_and_bone_name('METARIG')
 
@@ -84,7 +94,9 @@ for target_mesh in get_mesh_selection():
     hide_bones.clear()
     
     bpy.ops.object.mode_set(mode='OBJECT')
-    for vgroup in target_mesh.vertex_groups:
+    
+    main_object = get_main_object_from_object_with_name_suffix(target_mesh)
+    for vgroup in main_object.vertex_groups:
         if vgroup.lock_weight and not vgroup.name.startswith('_'):
             hide_bones.append(vgroup.name)
 
