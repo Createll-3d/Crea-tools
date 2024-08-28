@@ -139,6 +139,9 @@ for target_mesh in get_mesh_selection():
     bpy.ops.paint.weight_from_bones(type='AUTOMATIC')
     bpy.ops.object.mode_set(mode='OBJECT')
     
+    bpy.ops.ed.undo_push(message = f"Activity: Undo Split fot {target_mesh.name}")
+        print(f"Activity: Undo Split for {target_mesh.name}")
+    
     # smooth to remove some weight artifacts
     bpy.context.view_layer.objects.active = target_mesh
     target_mesh.select_set(True)
@@ -148,6 +151,9 @@ for target_mesh in get_mesh_selection():
     bpy.ops.object.vertex_group_smooth(group_select_mode='BONE_DEFORM', repeat = smooth_repeat)
     bpy.ops.object.vertex_group_clean(group_select_mode='BONE_DEFORM', limit=.001)
     bpy.ops.object.mode_set(mode='OBJECT')
+    
+    bpy.ops.ed.undo_push(message = f"Activity: Undo Split fot {target_mesh.name}")
+        print(f"Activity: Undo Split for {target_mesh.name}")
     
     if True: # a switch for -
         bpy.context.view_layer.objects.active = weight_armature
