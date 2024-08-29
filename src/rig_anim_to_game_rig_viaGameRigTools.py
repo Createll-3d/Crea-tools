@@ -10,6 +10,10 @@ Requires
 
 To Do
     - but we can probably just use the metarig/anim_rig with modifications as the game rig
+    - dont rely on game rig tools
+        - just duplicate metarig
+        - clean-up face rig
+        - remove helper bone
     
 """
 

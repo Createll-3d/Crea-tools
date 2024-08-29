@@ -8,7 +8,7 @@ def get_mesh_selection():
     for obj in bpy.context.selected_objects:
         if obj.type == 'MESH':
             selected_objects.append(obj)
-    print(len(selected_objects))
+    print(f"Activity: Get selected objects : {selected_objects}")
     return selected_objects
 
 def set_object_active(object):
@@ -193,12 +193,13 @@ def write_armature_data_to_custom_properties(object, modifier_name = 'Armature')
     if armature_modifier:
         object['_rig_name'] = armature_modifier.object.name
         object['_rig_mod_index'] = get_modifier_index_by_name(object, modifier_name)
-        print (f"For {object.name} - _rig_name = {object['_rig_name']} - _rig_mod_index = {object['_rig_mod_index']}")
+        print (f"Activity: Set {object.name}['_rig_name'] = {object['_rig_name']}")
+        print (f"Activity: Set {object.name}['_rig_mod_index'] = {object['_rig_mod_index']}")
 
 
 def set_armature_and_bone_name(rig_type, weight_armature = bpy.data.armatures['metarig'], anim_armature = bpy.data.armatures['rig_anim'], mesh_lists = get_mesh_selection()):
     # rig_type = 'ANIMRIG' or 'METARIG'
-    print(f"Activity : Setting Rig Style to {rig_type}")
+    print(f"Activity: Setting Rig Style to {rig_type}")
     
     standard_rigify_deform_bones = set(['spine', 'pelvis.L', 'pelvis.R', 'thigh.L', 'thigh.L.001', 'shin.L', 'shin.L.001', 'foot.L', 'toe.L', 'thigh.R', 'thigh.R.001', 'shin.R', 'shin.R.001', 'foot.R', 'toe.R', 'temple.L', 'temple.R', 'tongue', 'chin', 'chin.001', 'chin.L', 'chin.R', 'jaw', 'jaw.L.001', 'jaw.R.001', 'tongue.001', 'tongue.002', 'cheek.T.L', 'cheek.T.R', 'jaw.L', 'jaw.R', 'nose', 'nose.L', 'nose.R', 'cheek.B.L.001', 'cheek.B.R.001', 'cheek.B.L', 'cheek.B.R',  'nose.002', 'nose.001', 'nose.003', 'nose.004', 'nose.L.001', 'nose.R.001', 'cheek.T.L.001', 'cheek.T.R.001', 'shoulder.L', 'upper_arm.L', 'upper_arm.L.001', 'forearm.L', 'forearm.L.001', 'hand.L', 'f_index.01.L', 'f_index.02.L', 'f_index.03.L', 'thumb.01.L', 'thumb.02.L', 'thumb.03.L', 'palm.01.L', 'f_middle.01.L', 'f_middle.02.L', 'f_middle.03.L', 'palm.02.L', 'f_ring.01.L', 'f_ring.02.L', 'f_ring.03.L', 'palm.03.L', 'f_pinky.01.L', 'f_pinky.02.L', 'f_pinky.03.L', 'palm.04.L', 'shoulder.R', 'upper_arm.R', 'upper_arm.R.001', 'forearm.R', 'forearm.R.001', 'hand.R', 'f_index.01.R', 'f_index.02.R', 'f_index.03.R', 'thumb.01.R', 'thumb.02.R', 'thumb.03.R', 'palm.01.R', 'f_middle.01.R', 'f_middle.02.R', 'f_middle.03.R', 'palm.02.R', 'f_ring.01.R', 'f_ring.02.R', 'f_ring.03.R', 'palm.03.R', 'f_pinky.01.R', 'f_pinky.02.R', 'f_pinky.03.R', 'palm.04.R'])
     standard_rigify_deform_bones_substrings = ['spine.', 'lid.', 'lip.', 'brow.', 'teeth.', 'forehead.', 'heel.', 'ear.']
@@ -219,6 +220,8 @@ def set_armature_and_bone_name(rig_type, weight_armature = bpy.data.armatures['m
         
         obj_aramture_modifier_object = obj.modifiers.get('Armature').object
         
+        print(f"Activity: Setting Rig Style of {obj.name} to {rig_type}")
+        
         if rig_type == 'ANIMRIG' or rig_type == 'rig_anim':
             
             obj['_rig_name'] = 'rig_anim'
@@ -238,3 +241,14 @@ def set_armature_and_bone_name(rig_type, weight_armature = bpy.data.armatures['m
             for deform_bone in standard_rigify_deform_bones:
                 if obj.vertex_groups.get('DEF-' + deform_bone):
                     obj.vertex_groups.get('DEF-' + deform_bone).name = deform_bone
+
+
+def get_main_object_from_object_with_name_suffix(object, suffixes = ['.Weight', '.Final', '.Upload', '.Arkit']):
+    for suffix in suffixes:
+        if suffix in object.name:
+            object_name = object.name
+            main_name = object_name.replace(suffix,'')
+            main_object = bpy.data.objects.get(main_name ,None)
+            if main_object:
+                return main_object
+    return object

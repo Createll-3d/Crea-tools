@@ -5,7 +5,7 @@ Objective/Purpose
     - purges all helper bones in selected rig
 
 To Do
-    - use proper names lmao "delete_bone" is bad
+    - use proper names "delete_bone" is bad
 """
 
 def get_armature_selection():
