@@ -134,3 +134,6 @@ for target_mesh in get_mesh_selection():
     
 
 set_armature_and_bone_name('METARIG') # rig_type = 'ANIMRIG' or 'METARIG'
+
+
+print(f"-------------------------\n\nDone\n\n-------------------------")#this is just here because this script takes long change to a proper ping system
