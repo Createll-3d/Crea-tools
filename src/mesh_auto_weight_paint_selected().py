@@ -140,7 +140,7 @@ for target_mesh in get_mesh_selection():
     bpy.ops.object.mode_set(mode='OBJECT')
     
     bpy.ops.ed.undo_push(message = f"Activity: Undo Split fot {target_mesh.name}")
-        print(f"Activity: Undo Split for {target_mesh.name}")
+    print(f"Activity: Undo Split for {target_mesh.name}")
     
     # smooth to remove some weight artifacts
     bpy.context.view_layer.objects.active = target_mesh
@@ -153,7 +153,7 @@ for target_mesh in get_mesh_selection():
     bpy.ops.object.mode_set(mode='OBJECT')
     
     bpy.ops.ed.undo_push(message = f"Activity: Undo Split fot {target_mesh.name}")
-        print(f"Activity: Undo Split for {target_mesh.name}")
+    print(f"Activity: Undo Split for {target_mesh.name}")
     
     if True: # a switch for -
         bpy.context.view_layer.objects.active = weight_armature
