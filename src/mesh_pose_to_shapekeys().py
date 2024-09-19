@@ -32,7 +32,7 @@ To Do
     - theres a bug in blender that saves unlinked shapkey blocks
         - and then when it notices it tries to delete them all
         - more relevant to the mesh copy/sync stuff
-        - there was a fix but I guess it doesnt cover 3.6.14 lts
+        - there was a fix mentioned in the docs but I guess it doesnt cover 3.6.14 lts
     - theres a way to store posed values as vertex locations but
         - for transfer
             - need to check how subdiv messes with index
@@ -71,10 +71,10 @@ target_collection = bpy.data.collections['head.ARkit']
 
 Poses = [
     ('Poses_ARkit', ['browInnerUp','browDownLeft','browDownRight','browOuterUpLeft','browOuterUpRight','eyeLookUpLeft','eyeLookUpRight','eyeLookDownLeft','eyeLookDownRight','eyeLookInLeft','eyeLookInRight','eyeLookOutLeft','eyeLookOutRight','eyeBlinkLeft','eyeBlinkRight','eyeSquintRight','eyeSquintLeft','eyeWideLeft','eyeWideRight','cheekPuff','cheekSquintLeft','cheekSquintRight','noseSneerLeft','noseSneerRight','jawOpen','jawForward','jawLeft','jawRight','mouthFunnel','mouthPucker','mouthLeft','mouthRight','mouthRollUpper','mouthRollLower','mouthShrugUpper','mouthShrugLower','mouthClose','mouthSmileLeft','mouthSmileRight','mouthFrownLeft','mouthFrownRight','mouthDimpleLeft','mouthDimpleRight','mouthUpperUpLeft','mouthUpperUpRight','mouthLowerDownLeft','mouthLowerDownRight','mouthPressLeft','mouthPressRight','mouthStretchLeft','mouthStretchRight','tongueOut']),
-    #('Poses_Viseme', ['v_sil', 'v_aa', 'v_ee', 'v_ih', 'v_oh', 'v_ou', 'v_pp', 'v_ff', 'v_th', 'v_dd', 'v_kk', 'v_ch', 'v_ss', 'v_nn', 'v_rr', 'v_lookUp', 'v_lookDown', 'v_lookL', 'v_lookR', 'v_blink', 'v_blinkLeft', 'v_blinkRight', 'v_Angry', 'v_Sorrow', 'v_Joy', 'v_Fun', 'v_Suprised']),
-    #('Poses_Extra', []),
-    #('Poses_Physics', ['p_eye_mouth_scale_x-','p_eye_mouth_scale_y-','p_eye_scale_IrisX-_L','p_eye_scale_IrisX-_R','p_eye_scale_IrisY-_L','p_eye_scale_IrisY-_R','p_eye_scale_middleX-_L','p_eye_scale_middleX-_R','p_eye_scale_XY_L','p_eye_scale_XY_R','p_eye_scale_Y-_L','p_eye_scale_Y-_R']),
-    #('Poses_Corrective', []),
+    ('Poses_Viseme', ['v_sil', 'v_aa', 'v_ee', 'v_ih', 'v_oh', 'v_ou', 'v_pp', 'v_ff', 'v_th', 'v_dd', 'v_kk', 'v_ch', 'v_ss', 'v_nn', 'v_rr', 'v_lookUp', 'v_lookDown', 'v_lookL', 'v_lookR', 'v_blink', 'v_blinkLeft', 'v_blinkRight', 'v_Angry', 'v_Sorrow', 'v_Joy', 'v_Fun', 'v_Suprised']),
+    ('Poses_Extra', ['a_defaultSmile']),
+    ('Poses_Physics', ['p_eye_mouth_scale_x-','p_eye_mouth_scale_y-','p_eye_scale_IrisX-_L','p_eye_scale_IrisX-_R','p_eye_scale_IrisY-_L','p_eye_scale_IrisY-_R','p_eye_scale_middleX-_L','p_eye_scale_middleX-_R','p_eye_scale_XY_L','p_eye_scale_XY_R','p_eye_scale_Y-_L','p_eye_scale_Y-_R','p_jawDown','p_faceSquishX-','p_mouthUp']),
+    ('Poses_Corrective', ['c_jawOpen100+mouthSmileL','c_jawOpen100+mouthSmileR','c_overBite']),
 ]
 
 #empty poses for testing
@@ -124,10 +124,13 @@ def delete_shapekey_if_exists(object, shape_key_name):
     return
 
 def apply_Action_to_TargetCollection_Shapekey(action_name, target_mesh_objects):
-    print('Start ' + action_name)
+    
     for target in target_mesh_objects:
+        
         if target.hide_render:
             continue
+        
+        print(f"Activity: Set {action_name} pose to {target.name}")
         
         bpy.ops.object.mode_set(mode='OBJECT')
         set_object_active(target)
@@ -154,8 +157,9 @@ def apply_Action_to_TargetCollection_Shapekey(action_name, target_mesh_objects):
         except:
             print(target.name + ' ' + action_name)
             pass
-
-    return print('Finish ' + action_name)
+        
+        
+    return print(f"Activity: Finished applying {action_name} to shapekey")
 
 def play_notification():
     try:
@@ -194,17 +198,22 @@ def main(): # tried using this main thing but I dont see the point aside from lo
             set_pose_action(action_name, False, armature)
             apply_Action_to_TargetCollection_Shapekey(action_name, target_objects)
         
+        bpy.ops.ed.undo_push(message = f"Activity: Undo Split for {object.name}") #to prevent memory crash
+        
+        
     set_object_active(armature)
     bpy.ops.object.mode_set(mode='POSE')
     bpy.ops.pose.transforms_clear()
     bpy.ops.object.mode_set(mode='OBJECT')
     
     for object in target_objects:
+        bpy.ops.ed.undo_push(message = f"Activity: Undo Split for {object.name}") #to prevent memory crash
         remove_modifier_by_type(object, ['ARMATURE', 'SURFACE_DEFORM', 'NODES'])
         print(f'Applying Modifiers : {object.name}')
+        
         apply_modifiers_via_gret(object)
         None
-    
+        
     for object, temp_object in temp_objects:
         bpy.data.objects.remove(temp_object)
         object.name = object.name.rsplit('.SD',1)[0]

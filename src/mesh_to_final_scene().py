@@ -117,8 +117,12 @@ def create_geometry_nodes_outline_modifier(object, modifier_name = 'Set_Mesh_Out
     modifier["Output_6_attribute_name"] = 'CA - MeshOutlineWidth'
 
 def copy_mesh_modifiers_from_to(source_object, target_object):
+    bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
+    set_object_active(target_object)
+    bpy.ops.object.mode_set(mode='OBJECT')
     set_object_active(source_object)
+    bpy.ops.object.mode_set(mode='OBJECT')
     target_object.select_set(True)
     for modifier in source_object.modifiers:
         bpy.ops.object.modifier_copy_to_selected(modifier=modifier.name)

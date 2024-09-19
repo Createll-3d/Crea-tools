@@ -2,30 +2,11 @@ import bpy
 
 """
 Objective/Purpose
-    - for an intermediary scene for testing and to reduce lag
-    - Duplicates the weight mesh collection to a target arkit mesh collection
+    - deadge / depreciated
+    - transferred to v2
 
 To Do
-    - handle missing scene
-    - handle missing collection
-    - more robust initialize same with the other copy related stuff
-    - unlink pose on armature before start
-    - need to create scene if none
-    - an actual class ? or centralized copy system
-    - main
-        - manual for now : create scene
-        - manual for now : create target collection
-        - create game rig
-            - just delete all metarig helper bones ?
-            - missing twist bones though ... so we use anim rig ? and just take deform and remove DEF name ?
-                - wait do we even have twist bones ? for the meta to use for auto weight
-        - set to metarig
-        - clean modifiers
-            - maybe use a custom one ? or a more robust clean modifiers
-        - duplicate
-        - merge helper bones
-        - merge facial bones
-        - apply game rig modifier
+    - delete this and remove v2 from mesh_final_to_upload_v2.py
 """
 
 import sys
@@ -97,6 +78,8 @@ def link_material(object, material_name):
     else:
         None
 
+def rename_for_upload(object):
+    object.name.replace(['.Final'],'.Upload')
 
 #link_collections_to_scene(scene, scene_collection_names) 
 
@@ -128,8 +111,10 @@ if __name__ == "__main__":
     if len(object_lists) < 1:
         object_lists = bpy.data.collections['Texture Bake.Upload'].all_objects
     
-    main(object_lists)
+    #main(object_lists)
     
     for object in object_lists:
         clear_material(object)
         link_material(object, object['_bakeTextureGroup'] + "_Final")
+        clean_mesh_modifiers(object,['OH_OUTLINE','Set_Mesh_Outline_Weight','Mesh_Outline','Armature','UV_UDIMCompensate'])
+        create_armature_modifier(object, bpy.data.objects['metarig'], 0)

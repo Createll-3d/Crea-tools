@@ -32,7 +32,7 @@ def get_mesh_selection():
     return selected_objects
 
 def add_weight_via_geometry_node(target_object, parent_bone_name, helper_bone_name): # might need to change depending on you geometry node inputs
-    print(helper_bone_name + "->" + parent_bone_name)
+    print(f"Activity: For '{target_object.name}' Merging vertex weights of '{helper_bone_name}' to '{parent_bone_name}'")
     
     
     target_object.modifiers.new("_temp_HelperToParent", 'NODES')
@@ -45,6 +45,7 @@ def add_weight_via_geometry_node(target_object, parent_bone_name, helper_bone_na
     bpy.ops.object.mode_set(mode='OBJECT')
     
     # Apply
+    
     bpy.ops.object.modifier_move_to_index(modifier="_temp_HelperToParent", index=0)
     if target_object.active_shape_key:
         bpy.ops.gret.shape_key_apply_modifiers(modifier_mask=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
@@ -91,7 +92,7 @@ def merge_helper_to_parent(object, armature = None):
                 parent_bone_name = parent_bone.name        
                 
                 if parent_bone_name:
-                    print(f"Activity: {helper_bone_name} to {parent_bone_name}")
+                    
                     if parent_bone_name.startswith('ORG-'): # just a temporary measure helper bones should be parented to the def vers
                         parent_bone_name = parent_bone_name.replace('ORG-', 'DEF-', 1)
                         
@@ -105,6 +106,23 @@ def merge_helper_to_parent(object, armature = None):
 #    if len(vetex_group_collection) > 0:
 #        merge_helper_to_parent(object, armature)
 
+def merge_facial_bones_weight_to_spine(object, spine_vertex_group_name = 'spine.006'):
+    merge_collection = []
+    object_vetex_groups_name = []
+    
+    for vertex_group in object.vertex_groups:
+        object_vetex_groups_name.append(vertex_group.name)    
+    
+    for bone in bpy.data.objects['metarig'].data.bones:
+        if bone.layers[0] or bone.layers[1] or bone.layers[2]:
+            if bone.name in object_vetex_groups_name:
+                merge_collection.append(bone.name)
+    
+    if not object.vertex_groups.get(spine_vertex_group_name, False):
+        object.vertex_groups.new(name = spine_vertex_group_name)
+    
+    for facial_bone_name in merge_collection:
+        add_weight_via_geometry_node(object, spine_vertex_group_name, facial_bone_name)
                 
 def clear_shapekeys(object):
     bpy.ops.object.mode_set(mode='OBJECT')
@@ -131,7 +149,7 @@ def extract_shape_keys_vertex_positons(object):
     for shape_key in shape_keys:
         if shape_key.name != "Basis": # we can just get rid of this but for safety so that the new basis doesnt get influenced by this code
             shape_keys_vertex_positons[shape_key.name] = [shape_key.data[i].co.copy() for i in range(len(shape_key.data))]
-        print(f"Activity: Extrated {shape_key.name} vertex locations")
+        print(f"Activity: For '{object.name}', Extrated {shape_key.name} vertex locations")
     
     
     return shape_keys_vertex_positons
@@ -158,14 +176,15 @@ def reconstruct_shape_keys_vertex_positons(object, vertex_data):
             for i, vertex_location in enumerate(vertices):
                 shape_key_data[i].co = vertex_location
         
-        print(f"Activity: Reconstructing {shape_key_name}")
+        print(f"Activity: For '{object.name}', Reconstructing {shape_key_name}")
     
     object.data.update()
-    print(f"Activity: Reconstructing Shapekeys Finished")
+    print(f"Activity: Reconstructing Shapekeys Finished for '{object.name}'")
 
 
-def remove_zero_weight_vertex_groups(object, toggle_only_helper = False):
+def remove_zero_weight_vertex_groups(object, reference_armature = None, toggle_only_helper = False):
 
+    
     print(f"Activity: Removing zero weight vertex groups")
     
     vertex_groups = object.vertex_groups[:]
@@ -184,11 +203,11 @@ def remove_zero_weight_vertex_groups(object, toggle_only_helper = False):
                 break
             
         if remove_group:
-            if '.helper' not in vg.name and toggle_only_helper:
-                None
-                
-            print(f"Activity: Removing vertex group {vg_name}")
-            object.vertex_groups.remove(vg)
+            if toggle_only_helper and '.helper' not in vg_name:
+                print(f"Debug: For {object.name}, Skipping vertex group {vg_name}")
+            else:
+                print(f"Activity: For {object.name}, Removing vertex group {vg_name}")
+                object.vertex_groups.remove(vg)
             
         else:
             None
@@ -220,13 +239,21 @@ def main(objects_list):
         bpy.ops.ed.undo_push(message = f"Activity: Undo Split for {object.name}") #to prevent memory crash
         print(f"Activity: Undo Split for {object.name}")
         
-        merge_helper_to_parent(object)
+        merge_helper_to_parent(object, bpy.data.objects['metarig'])
+        
         
         bpy.ops.ed.undo_push(message = f"Activity: Undo Split for {object.name}") #to prevent memory crash
         print(f"Activity: Undo Split for {object.name}")
         
-        reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
         remove_zero_weight_vertex_groups(object, toggle_only_helper = False)
+        merge_facial_bones_weight_to_spine(object, 'spine.006')
+        
+        bpy.ops.ed.undo_push(message = f"Activity: Undo Split for {object.name}") #to prevent memory crash
+        print(f"Activity: Undo Split for {object.name}")
+        
+        remove_zero_weight_vertex_groups(object, toggle_only_helper = False)
+        reconstruct_shape_keys_vertex_positons(object, shape_key_vertex_data)
+        
         
 #        if current_rig_state != object['_rig_name']:
 #            set_armature_and_bone_name(current_rig_state)
